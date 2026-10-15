@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template_string, send_file, session, redirect, url_for
+from flask import Flask, request, jsonify, render_template_string, send_file, session, redirect
 import io, os, requests, json
 from PIL import Image, ImageFilter
 
@@ -47,7 +47,6 @@ Règles d'intelligence:
 8. Ne dis jamais que tu es Gemini ou Pollinations. Tu es SAGESSE.
 """
 
-# PAGE LOGIN AVEC GOOGLE + EMAIL
 LOGIN_HTML = """
 <!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>SAGESSE - Connexion</title>
 <style>
@@ -66,31 +65,20 @@ input{width:100%;padding:14px;border-radius:30px;border:1px solid #ddd;outline:n
 <div class="card">
 <div class="logo">SAGESSE</div>
 <div class="sub">Connecte-toi pour continuer</div>
-
 <button class="btn btn-google" onclick="googleLogin()"> <img src="https://www.svgrepo.com/show/475656/google-color.svg" width="20"> Continuer avec Google</button>
-
 <div class="divider">ou</div>
-
 <input id="email" type="email" placeholder="Ton email">
 <input id="nom" type="text" placeholder="Ton prénom">
 <button class="btn btn-email" onclick="emailLogin()">Continuer avec Email →</button>
-
-<p style="font-size:11px;color:#999;margin-top:15px">En continuant, tu acceptes les conditions de SAGESSE</p>
 </div>
 <script>
-function googleLogin(){
- // Pour l'instant on redirige vers login Google (on va configurer après)
- window.location.href='/auth/google';
-}
+function googleLogin(){ window.location.href='/auth/google'; }
 function emailLogin(){
  let email=document.getElementById('email').value.trim();
  let nom=document.getElementById('nom').value.trim();
  if(!email ||!nom){ alert('Remplis email et prénom'); return; }
  fetch('/auth/email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,nom})})
-.then(r=>r.json()).then(d=>{
-   if(d.ok) window.location.href='/';
-   else alert(d.error);
- });
+.then(r=>r.json()).then(d=>{ if(d.ok) window.location.href='/'; else alert(d.error); });
 }
 </script></body></html>
 """
@@ -179,9 +167,6 @@ def auth_email():
 
 @app.route('/auth/google')
 def auth_google():
-    # Version simple sans clé Google pour l'instant: on demande juste le nom
-    # Si tu veux le vrai Google Login, il faut ajouter GOOGLE_CLIENT_ID dans Render
-    # Pour l'instant on simule une connexion Google rapide
     session['user']={"email":"google_user@gmail.com","nom":"Utilisateur Google"}
     return redirect('/')
 
@@ -197,7 +182,6 @@ def home():
     name=session['user'].get('nom','ami')
     return render_template_string(HTML.replace('{{name}}', name))
 
-# --- TON CERVEAU INTELLIGENT INTACT ---
 @app.route('/ask')
 def ask_route():
     if 'user' not in session: return jsonify({"reponse":"Non connecté"}),401
